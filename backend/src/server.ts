@@ -2,12 +2,17 @@ import dotenv from 'dotenv';
 dotenv.config();
 import express, { Request, Response } from 'express';
 import { connectDB } from './config/db';
+import taskRoutes from './routes/taskRoutes';
 
 const app = express();
+
+app.use(express.json());
 
 const PORT = process.env.PORT || 5000;
 
 connectDB();
+
+app.use('/api/tasks', taskRoutes);
 
 app.get('/', (req: Request, res: Response) => {
   return res.json({ 
