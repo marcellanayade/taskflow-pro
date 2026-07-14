@@ -10,6 +10,7 @@ export interface ITask extends Document {
   status: TaskStatus;
   priority: TaskPriority;
   project: mongoose.Types.ObjectId;    //project ref
+  user: mongoose.Types.ObjectId;       //task owner
   assignedTo?: mongoose.Types.ObjectId; //user ref
   dueDate?: Date;                       //delivery date
   createdAt: Date;
@@ -46,6 +47,11 @@ const taskSchema: Schema = new Schema({
     type: Schema.Types.ObjectId, 
     ref: 'Project', 
     required: [true, 'Every task must be linked to a project!'] 
+  },
+  user: { 
+    type: Schema.Types.ObjectId, 
+    ref: 'User', 
+    required: [true, 'Every task must belong to a user!'] 
   },
   assignedTo: { 
     type: Schema.Types.ObjectId, 

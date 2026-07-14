@@ -1,15 +1,19 @@
 import { Request, Response } from 'express';
 import { TaskService } from '../services/TaskService';
+import { AuthRequest } from '../middlewares/authMiddleware';
 
 const taskService = new TaskService();
 
 export class TaskController {
   
   //route gets a request to create task 
-  async create(req: Request, res: Response) {
+  async create(req: AuthRequest, res: Response) {
     try {
-      //get data from frontend 
-      const taskData = req.body;
+      //get task data and userid 
+      const taskData = {
+        ...req.body,
+        user: req.userId 
+      };
 
       //send it to service
       const newTask = await taskService.createTask(taskData);
@@ -22,10 +26,10 @@ export class TaskController {
     }
   }
 
-  async getAll(req: Request, res: Response) {
+  async getAll(req: AuthRequest, res: Response) {
     try {
-      //service gets tasks list
-      const tasks = await taskService.getAllTasks();
+      //service gets tasks list from specific user
+      const tasks = await taskService.getAllTasks(req.userId as string);
       
       //if success
       return res.status(200).json(tasks);

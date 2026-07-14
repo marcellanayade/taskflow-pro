@@ -18,9 +18,9 @@ export class TaskService {
     return newTask;
   }
 
-  async getAllTasks() {
-    //get all data from db
-    const tasks = await Task.find();
+  async getAllTasks(userId: string) {
+    //get data from db
+    const tasks = await Task.find({ user: userId });
     return tasks;
   }
 
