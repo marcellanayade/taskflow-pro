@@ -5,6 +5,7 @@ import { authMiddleware } from '../middlewares/authMiddleware';
 const router = Router();
 const taskController = new TaskController();
 
+//protection
 router.use(authMiddleware);
 
 //create tasks

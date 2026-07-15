@@ -4,6 +4,7 @@ import express, { Request, Response } from 'express';
 import { connectDB } from './config/db';
 import taskRoutes from './routes/taskRoutes';
 import userRoutes from './routes/userRoutes';
+import projectRoutes from './routes/projectRoutes';
 
 const app = express();
 
@@ -16,6 +17,8 @@ connectDB();
 app.use('/api/users', userRoutes);
 
 app.use('/api/tasks', taskRoutes);
+
+app.use('/api/projects', projectRoutes);
 
 app.get('/', (req: Request, res: Response) => {
   return res.json({ 

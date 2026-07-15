@@ -47,7 +47,7 @@ export class TaskController {
       const taskData = req.body;
 
       //send it for service to update
-      const updatedTask = await taskService.updateTask(id, taskData);
+      const updatedTask = await taskService.updateTask(id as string, taskData);
       return res.status(200).json(updatedTask);
       
     } catch (error: any) {
@@ -59,7 +59,7 @@ export class TaskController {
     try {
       const { id } = req.params;
       
-      const result = await taskService.deleteTask(id);
+      const result = await taskService.deleteTask(id as string);
       
       //send success message
       return res.status(200).json(result);
