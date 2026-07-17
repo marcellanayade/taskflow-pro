@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { LoginPage } from './pages/LoginPage';
 import { ProjectsPage } from './pages/ProjectsPage';
+import { ProjectDetailsPage } from './pages/ProjectDetailsPage';
 import './App.css';
 
 function App() {
@@ -15,6 +16,8 @@ function App() {
 
         {/* Projects route */}
         <Route path="/projects" element={<ProjectsPage />} />
+
+        <Route path="/projects/:id" element={<ProjectDetailsPage />} />
       </Routes>
     </BrowserRouter>
   );

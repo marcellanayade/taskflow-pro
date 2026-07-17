@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { TaskService } from '../services/TaskService';
 import { AuthRequest } from '../middlewares/authMiddleware';
+import { Task } from '../models/Task'; 
 
 const taskService = new TaskService();
 
@@ -35,6 +36,22 @@ export class TaskController {
       return res.status(200).json(tasks);
     } catch (error: any) {
       return res.status(500).json({ error: 'An error occurred while retrieving the tasks.'});
+    }
+  }
+
+  async getByProject(req: AuthRequest, res: Response) {
+    try {
+      const { id } = req.params; 
+      
+      //get tasks from this project and user 
+      const tasks = await Task.find({ 
+        project: id, 
+        user: req.userId 
+      });
+      
+      return res.status(200).json(tasks);
+    } catch (error: any) {
+      return res.status(500).json({ error: 'Error fetching the project tasks.' });
     }
   }
 
