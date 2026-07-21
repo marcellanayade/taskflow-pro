@@ -6,6 +6,8 @@ export interface IUser extends Document {
   email: string;
   password?: string; 
   createdAt: Date;
+  resetPasswordToken?: string;
+  resetPasswordExpires?: Date;
 }
 
 //rules for db
@@ -28,6 +30,14 @@ const userSchema: Schema = new Schema({
   createdAt: { 
     type: Date, 
     default: Date.now 
+  },
+  resetPasswordToken: { 
+    type: String, 
+    required: false 
+  },
+  resetPasswordExpires: { 
+    type: Date, 
+    required: false 
   }
 });
 

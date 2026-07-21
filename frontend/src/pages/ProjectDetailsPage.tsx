@@ -13,6 +13,10 @@ export function ProjectDetailsPage() {
     //is screen loading
     const [loading, setLoading] = useState(true);
 
+    const [title, setTitle] = useState('');
+    const [description, setDescription] = useState('');
+    const [priority, setPriority] = useState('medium');
+
     useEffect(() => {
         const fetchTasks = async () => {
             const token = localStorage.getItem('token');
@@ -30,7 +34,7 @@ export function ProjectDetailsPage() {
                 //save task
                 setTasks(response.data);
             } catch (error) {
-                console.error('Erro ao buscar tarefas:', error);
+                console.error('Error when searching for tasks:', error);
             } finally {
                 //remove "loading" message 
                 setLoading(false);
@@ -40,6 +44,28 @@ export function ProjectDetailsPage() {
         fetchTasks();
     }, [id, navigate]); //whenever id changes 
 
+    //send new task to backend
+    const handleCreateTask = async (e: React.FormEvent) => {
+        e.preventDefault();
+        const token = localStorage.getItem('token');
+        try {
+            const response = await axios.post(`http://localhost:5000/api/projects/${id}/tasks`, 
+                { title, description, priority, project: id },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            
+            //add new task to list on screen 
+            setTasks([...tasks, response.data]);
+            
+            //clear fields
+            setTitle('');
+            setDescription('');
+            setPriority('medium');
+        } catch (error) {
+            console.error('Error creating task:', error);
+        }
+    };
+
     return (
         <div className="dashboard-container">
             <div className="dashboard-header">
@@ -48,6 +74,42 @@ export function ProjectDetailsPage() {
                     Back to Projects
                 </button>
             </div>
+
+            {/*form to create tasks */}
+            <form className="project-form" onSubmit={handleCreateTask}>
+                <h3>Add New Task</h3>
+                <div>
+                    <input 
+                        type="text" 
+                        placeholder="Task title (Ex: Create data base)" 
+                        value={title} 
+                        onChange={(e) => setTitle(e.target.value)} 
+                        required 
+                    />
+                </div>
+                <div>
+                    <input 
+                        type="text" 
+                        placeholder="Description (optional)" 
+                        value={description} 
+                        onChange={(e) => setDescription(e.target.value)} 
+                    />
+                </div>
+                
+                {/* task priority */}
+                <div style={{ marginBottom: '1rem' }}>
+                    <select 
+                        value={priority} 
+                        onChange={(e) => setPriority(e.target.value)}
+                        style={{ width: '100%', padding: '0.75rem', borderRadius: '6px', border: '1px solid var(--border-color)', fontSize: '1rem' }}
+                    >
+                        <option value="low">Low Priority</option>
+                        <option value="medium">Medium Priority</option>
+                        <option value="high">High Priority</option>
+                    </select>
+                </div>
+                <button type="submit">Create Task</button>
+            </form>
 
             {loading ? (
                 <p>Loading tasks...</p>

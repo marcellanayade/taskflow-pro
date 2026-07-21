@@ -29,4 +29,29 @@ export class UserController {
       return res.status(401).json({ error: error.message });
     }
   }
+
+  async forgotPassword(req: Request, res: Response) {
+    try {
+      const { email } = req.body;
+      
+      const result = await userService.forgotPassword(email);
+      
+      return res.status(200).json(result);
+    } catch (error: any) {
+      return res.status(400).json({ error: error.message });
+    }
+  }
+
+  async resetPassword(req: Request, res: Response) {
+    try {
+      const token = req.params.token as string;; //get token from url
+      const { password } = req.body;
+
+      const result = await userService.resetPassword(token, password);
+      
+      return res.status(200).json(result);
+    } catch (error: any) {
+      return res.status(400).json({ error: error.message });
+    }
+  }
 }

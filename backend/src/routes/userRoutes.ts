@@ -9,4 +9,10 @@ router.post('/register', userController.register);
 
 router.post('/login', userController.login);
 
+router.post('/forgot-password', userController.forgotPassword);
+
+// reset password with token
+router.post('/reset-password/:token', userController.resetPassword);
+
+
 export default router;
