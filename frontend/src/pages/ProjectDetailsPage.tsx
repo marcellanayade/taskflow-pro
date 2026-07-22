@@ -2,6 +2,7 @@ import './ProjectDetailsPage.css';
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import Swal from 'sweetalert2';
 
 export function ProjectDetailsPage() {
     //get id from url
@@ -70,6 +71,15 @@ export function ProjectDetailsPage() {
                 
                 setTasks(tasks.map(t => t._id === editingTaskId ? response.data : t));
                 setEditingTaskId(null);
+
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'Task updated successfully.',
+                    icon: 'success',
+                    confirmButtonColor: '#7260e0',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
             } else {
                 //create task
                 const response = await axios.post(`http://localhost:5000/api/projects/${id}/tasks`,
@@ -78,6 +88,15 @@ export function ProjectDetailsPage() {
                 );
                 
                 setTasks([...tasks, response.data]);
+
+                Swal.fire({
+                    title: 'Created!',
+                    text: 'New task added to the board.',
+                    icon: 'success',
+                    confirmButtonColor: '#7260e0',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
             }
             
             // clear fields
@@ -86,6 +105,12 @@ export function ProjectDetailsPage() {
             setPriority('medium');
         } catch (error) {
             console.error('Error saving task:', error);
+            Swal.fire({
+                title: 'Oops...',
+                text: 'Error saving task!',
+                icon: 'error',
+                confirmButtonColor: '#7260e0'
+            });
         }
     };
 
@@ -156,8 +181,17 @@ export function ProjectDetailsPage() {
 
     //delete task
     const handleDeleteTask = async (taskId: string) => {
-        const confirmDelete = window.confirm('Are you sure you want to delete this task?');
-        if (confirmDelete) {
+        const result = await Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this task deletion!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#9ca3af',
+            confirmButtonText: 'Yes, delete it!'
+        });
+
+        if (result.isConfirmed) {
             try {
                 const token = localStorage.getItem('token');
                 await axios.delete(`http://localhost:5000/api/tasks/${taskId}`, {
@@ -165,8 +199,21 @@ export function ProjectDetailsPage() {
                 });
                 
                 setTasks(tasks.filter(t => t._id !== taskId));
+
+                Swal.fire({
+                    title: 'Deleted!',
+                    text: 'Your task has been deleted.',
+                    icon: 'success',
+                    confirmButtonColor: '#7260e0'
+                });
             } catch (error) {
                 console.error('Error deleting task:', error);
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Failed to delete the task.',
+                    icon: 'error',
+                    confirmButtonColor: '#7260e0'
+                });
             }
         }
     };

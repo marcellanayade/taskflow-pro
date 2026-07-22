@@ -1,4 +1,5 @@
 import { Project, IProject } from '../models/Project';
+import { Task } from '../models/Task'; 
 
 export class ProjectService {
   
@@ -29,23 +30,32 @@ export class ProjectService {
   }
 
   //update project
-  async updateProject(id: string, data: Partial<IProject>) {
-    const updatedProject = await Project.findByIdAndUpdate(id, data, { new: true });
+  async updateProject(id: string, userId: string, data: Partial<IProject>) {
+    //ensure only the owner can update by checking both id and owner
+    const updatedProject = await Project.findOneAndUpdate(
+      { _id: id, owner: userId },
+      data,
+      { new: true }
+    );
     
     if (!updatedProject) {
-      throw new Error('Project not found in the database.');
+      throw new Error('Project not found or unauthorized.');
     }
     
     return updatedProject;
   }
 
   //delete project
-  async deleteProject(id: string) {
-    const deletedProject = await Project.findByIdAndDelete(id);
+  async deleteProject(id: string, userId: string) {
+    //ensure only the owner can delete
+    const deletedProject = await Project.findOneAndDelete({ _id: id, owner: userId });
     
     if (!deletedProject) {
-      throw new Error('Project not found.');
+      throw new Error('Project not found or unauthorized.');
     }
+    
+    //delete all tasks belonging to this project
+    await Task.deleteMany({ project: id }); 
     
     return { message: 'Project successfully deleted.' };
   }

@@ -41,21 +41,23 @@ export class ProjectController {
     }
   }
 
-  async update(req: Request, res: Response) {
+  async update(req: AuthRequest, res: Response) {
     try {
       const { id } = req.params;
       const projectData = req.body;
-      const updatedProject = await projectService.updateProject(id as string, projectData);
+      //pass userId to service for security check
+      const updatedProject = await projectService.updateProject(id as string, req.userId as string, projectData);
       return res.status(200).json(updatedProject);
     } catch (error: any) {
       return res.status(400).json({ error: error.message });
     }
   }
 
-  async delete(req: Request, res: Response) {
+  async delete(req: AuthRequest, res: Response) {
     try {
       const { id } = req.params;
-      const result = await projectService.deleteProject(id as string);
+      //pass userId to service for security check
+      const result = await projectService.deleteProject(id as string, req.userId as string);
       return res.status(200).json(result);
     } catch (error: any) {
       return res.status(400).json({ error: error.message });
