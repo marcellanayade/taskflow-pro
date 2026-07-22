@@ -24,24 +24,29 @@ export class TaskService {
     return tasks;
   }
 
-  async updateTask(id: string, data: Partial<ITask>) {
+  async updateTask(id: string, userId: string, data: Partial<ITask>) {
     //{ new: true } gets task with new data 
-    const updatedTask = await Task.findByIdAndUpdate(id, data, { new: true });
+    //findOneAndUpdate ensures the task belongs to the user
+    const updatedTask = await Task.findOneAndUpdate(
+      { _id: id, user: userId },
+      data,
+      { new: true }
+    );
     
-    //if id not found
+    //if id not found or unauthorized
     if (!updatedTask) {
-      throw new Error('Task not found in the database.');
+      throw new Error('Task not found or unauthorized.');
     }
 
     return updatedTask;
   }
 
-  async deleteTask(id: string) {
-    //findByIdAndDelete finds and delete task from db
-    const deletedTask = await Task.findByIdAndDelete(id);
+  async deleteTask(id: string, userId: string) {
+    //findOneAndDelete finds and delete task from db securely
+    const deletedTask = await Task.findOneAndDelete({ _id: id, user: userId });
     
     if (!deletedTask) {
-      throw new Error('Task not found.');
+      throw new Error('Task not found or unauthorized.');
     }
 
     return { message: 'Task successfully deleted.' };

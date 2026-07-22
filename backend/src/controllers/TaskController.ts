@@ -55,7 +55,7 @@ export class TaskController {
     }
   }
 
-  async update(req: Request, res: Response) {
+  async update(req: AuthRequest, res: Response) {
     try {
       //get id from url
       const { id } = req.params;
@@ -63,8 +63,8 @@ export class TaskController {
       //get changes from json
       const taskData = req.body;
 
-      //send it for service to update
-      const updatedTask = await taskService.updateTask(id as string, taskData);
+      //send it for service to update (with userId for security)
+      const updatedTask = await taskService.updateTask(id as string, req.userId as string, taskData);
       return res.status(200).json(updatedTask);
       
     } catch (error: any) {
@@ -72,11 +72,12 @@ export class TaskController {
     }
   }
 
-  async delete(req: Request, res: Response) {
+  async delete(req: AuthRequest, res: Response) {
     try {
       const { id } = req.params;
       
-      const result = await taskService.deleteTask(id as string);
+      //pass userId to ensure user owns the task
+      const result = await taskService.deleteTask(id as string, req.userId as string);
       
       //send success message
       return res.status(200).json(result);

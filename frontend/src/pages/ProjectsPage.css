@@ -1,6 +1,14 @@
+.dashboard-wrapper {
+  min-height: 100vh;
+  background-color: transparent; /* Isso permite que a imagem do index.css apareça! */
+  font-family: "Inter", sans-serif;
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+}
+
 .dashboard-container {
   max-width: 800px;
-  margin: 2rem auto;
+  margin: 0 auto;
   padding: 0 1.5rem;
 }
 
@@ -11,12 +19,27 @@
   margin-bottom: 2rem;
 }
 
+.dashboard-header h2 {
+  font-size: 1.6rem;
+  color: #4b5563;
+  font-weight: 700;
+  margin: 0;
+}
+
 .btn-logout {
   background-color: transparent;
   color: #ef4444;
   border: 1px solid #ef4444;
-  width: auto;
-  padding: 0.5rem 1.5rem;
+  border-radius: 8px;
+  width: 42px !important;  /* Trava a largura máxima */
+  height: 42px;            /* Trava a altura */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+  flex-shrink: 0;          /*stop flexbox from stretching */
 }
 
 .btn-logout:hover {
@@ -24,16 +47,79 @@
 }
 
 .project-form {
-  background: var(--card-bg);
-  padding: 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  background: transparent; 
+  border: none;            
+  box-shadow: none;        
+  padding: 1rem 0;         
   margin-bottom: 2.5rem;
 }
 
 .project-form h3 {
+  text-align: center;       
   margin-top: 0;
+  margin-bottom: 1.5rem;
+  color: #4b5563;
+  font-size: 1.2rem;
+}
+
+.project-input-group {
   margin-bottom: 1rem;
+}
+
+.project-input-group input,
+.project-input-group textarea {
+  width: 100%;
+  padding: 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  box-sizing: border-box;
+  outline: none;
+  color: #374151;
+  font-family: "Inter", sans-serif;
+  transition: border-color 0.2s;
+  background-color: #ffffff;
+}
+
+.project-input-group textarea {
+  resize: vertical; 
+  min-height: 100px;
+}
+
+.project-input-group input:focus,
+.project-input-group textarea:focus {
+  border-color: #7260e0;
+}
+
+.project-input-group input::placeholder,
+.project-input-group textarea::placeholder {
+  color: #b5b5b5;
+  font-weight: 400;
+}
+
+.btn-create-project {
+  width: 100%;
+  padding: 1rem;
+  background-color: #7260e0;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-top: 0.5rem;
+}
+
+.btn-create-project:hover {
+  background-color: #5c4ac9;
+}
+
+.empty-message {
+  text-align: center;
+  color: #888;
+  margin-top: 3rem;
+  font-size: 1rem;
 }
 
 .project-list {
@@ -44,12 +130,16 @@
 }
 
 .project-card {
-  background: var(--card-bg);
-  border-left: 5px solid var(--primary-color);
+  background: #ffffff;
+  border-left: 5px solid #7260e0; 
   padding: 1.5rem;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border-top: 1px solid #f3f4f6;
+  border-right: 1px solid #f3f4f6;
+  border-bottom: 1px solid #f3f4f6;
 }
 
 .project-card:hover {
@@ -60,10 +150,12 @@
 .project-card h3 {
   margin-top: 0;
   margin-bottom: 0.5rem;
-  color: var(--primary-color);
+  color: #7260e0;
+  font-size: 1.1rem;
 }
 
 .project-card p {
   margin: 0;
-  color: #4b5563;
+  color: #888;
+  font-size: 0.95rem;
 }

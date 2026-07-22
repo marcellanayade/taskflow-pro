@@ -18,6 +18,16 @@ export class ProjectService {
     return projects;
   }
 
+  async getProjectById(id: string) {
+    const project = await Project.findById(id); 
+    
+    if (!project) {
+      throw new Error('Project not found.');
+    }
+    
+    return project;
+  }
+
   //update project
   async updateProject(id: string, data: Partial<IProject>) {
     const updatedProject = await Project.findByIdAndUpdate(id, data, { new: true });

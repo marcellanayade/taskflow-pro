@@ -18,4 +18,6 @@ router.delete('/:id', projectController.delete);
 router.get('/:id/tasks', taskController.getByProject);
 router.post('/:id/tasks', taskController.create);
 
+router.get('/:id', projectController.getProjectById);
+
 export default router;
