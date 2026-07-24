@@ -30,6 +30,8 @@
   }
 }
 
+
+
 @media (prefers-color-scheme: dark) {
   :root {
     --text: #9ca3af;
@@ -99,6 +101,79 @@ p {
   margin: 0;
 }
 
+/*DARK MODE */
+body.dark-mode {
+  background-color: #111827;
+  color: #f9fafb;
+}
+
+body.dark-mode .dashboard-wrapper,
+body.dark-mode .login-wrapper,
+body.dark-mode .signup-wrapper {
+  background-color: #111827;
+}
+
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3,
+body.dark-mode h4,
+body.dark-mode p,
+body.dark-mode .kanban-column-title {
+  color: #f9fafb;
+}
+
+body.dark-mode .empty-message, 
+body.dark-mode .task-desc {
+  color: #d1d5db;
+}
+
+body.dark-mode .project-card,
+body.dark-mode .kanban-card,
+body.dark-mode .login-container,
+body.dark-mode .signup-container {
+  background-color: #1f2937;
+  border-color: #374151;
+}
+
+body.dark-mode input,
+body.dark-mode textarea,
+body.dark-mode select {
+  background-color: #374151;
+  color: #f9fafb;
+  border-color: #4b5563;
+}
+
+body.dark-mode .input-group svg,
+body.dark-mode .project-input-group svg {
+  stroke: #d1d5db; 
+}
+
+body.dark-mode .btn-logout,
+body.dark-mode .btn-back {
+  border-color: #7260e0;
+  color: #a78bfa; 
+}
+
+body.dark-mode .btn-logout:hover,
+body.dark-mode .btn-back:hover,
+body.dark-mode .btn-icon:hover {
+  background-color: #374151;
+}
+
+body.dark-mode .kanban-column {
+  background-color: rgba(31, 41, 55, 0.7);
+  border-color: rgba(75, 85, 99, 0.5);
+}
+
+body.dark-mode .task-count {
+  background-color: #374151;
+  color: #d1d5db;
+}
+
+body.dark-mode input[type="date"] {
+  color-scheme: dark;
+}
+
 code,
 .counter {
   font-family: var(--mono);
@@ -112,4 +187,47 @@ code {
   line-height: 135%;
   padding: 4px 8px;
   background: var(--code-bg);
+}
+
+.global-theme-toggle {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  border: 2px solid #7260e0;
+  color: #7260e0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  z-index: 9999;
+  transition: all 0.3s ease;
+}
+
+.global-theme-toggle:hover {
+  transform: scale(1.1);
+  background-color: #f3f0ff;
+}
+
+body.dark-mode .global-theme-toggle {
+  background-color: #1f2937;
+  border-color: #7260e0;
+  color: #a78bfa;
+}
+
+body.dark-mode .global-theme-toggle:hover {
+  background-color: #374151;
+}
+
+@media (max-width: 768px) {
+  .global-theme-toggle {
+    bottom: 1.5rem;
+    right: 1.5rem;
+    width: 45px;
+    height: 45px;
+  }
 }

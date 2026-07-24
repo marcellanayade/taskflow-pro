@@ -2,11 +2,11 @@ import './LoginPage.css';
 import { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2';
 
 export function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
   const navigate = useNavigate();
@@ -14,7 +14,6 @@ export function LoginPage() {
   //log in
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(''); //clear old error 
     try {
       const response = await axios.post('http://localhost:5000/api/users/login', {
         email,
@@ -33,8 +32,15 @@ export function LoginPage() {
       navigate('/projects');
 
     } catch (err: any) {
-      //get error from backend 
-      setError(err.response?.data?.error || 'Error logging in. Please try again.');
+      //get error from backend and show with SweetAlert2
+      const errorMessage = err.response?.data?.error || 'Error logging in. Please check your credentials.';
+      
+      Swal.fire({
+        title: 'Login failed',
+        text: errorMessage,
+        icon: 'error',
+        confirmButtonColor: '#7260e0'
+      });
     }
   };
 
@@ -52,7 +58,12 @@ export function LoginPage() {
 
   //google OAuth placeholder
   const handleGoogleLogin = () => {
-    alert('Google OAuth integration is under construction!');
+    Swal.fire({
+      title: 'Under Construction',
+      text: 'Google OAuth integration is coming soon!',
+      icon: 'info',
+      confirmButtonColor: '#7260e0'
+    });
   };
 
   return (

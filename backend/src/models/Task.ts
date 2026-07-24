@@ -14,6 +14,7 @@ export interface ITask extends Document {
   assignedTo?: mongoose.Types.ObjectId; //user ref
   dueDate?: Date;                       //delivery date
   createdAt: Date;
+  completedAt?: Date;
 }
 
 //rules for db
@@ -64,6 +65,10 @@ const taskSchema: Schema = new Schema({
   createdAt: { 
     type: Date, 
     default: Date.now 
+  },
+  completedAt: { 
+    type: Date,
+    default: null 
   }
 });
 

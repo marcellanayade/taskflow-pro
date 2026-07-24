@@ -68,10 +68,10 @@
 }
 
 .project-input-group input,
-.project-input-group textarea,
 .project-input-group select {
   width: 100%;
-  padding: 1rem;
+  height: 54px; 
+  padding: 0 1rem; 
   border: 1px solid #d1d5db;
   border-radius: 12px;
   font-size: 0.95rem;
@@ -81,15 +81,30 @@
   font-family: "Inter", sans-serif;
   transition: border-color 0.2s;
   background-color: #ffffff;
+  margin: 0;
 }
 
 .project-input-group textarea {
+  width: 100%;
+  padding: 1rem; 
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  box-sizing: border-box;
+  outline: none;
+  color: #374151;
+  font-family: "Inter", sans-serif;
+  transition: border-color 0.2s;
+  background-color: #ffffff;
   resize: vertical;
   min-height: 100px;
+  height: auto; 
+  margin: 0;
 }
 
 .project-input-group select {
   appearance: none; 
+  -webkit-appearance: none;
   cursor: pointer;
 }
 
@@ -111,6 +126,7 @@
   cursor: pointer;
   transition: background-color 0.2s;
   margin-top: 0.5rem;
+  height: 54px;
 }
 
 .btn-create-project:hover {
@@ -331,6 +347,30 @@
 
 .badge-status {
   display: none; 
+}
+
+.badge-date {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.6rem;
+  border-radius: 9999px;
+}
+
+.date-overdue { background-color: #fee2e2; color: #ef4444; }
+.date-today { background-color: #fef3c7; color: #d97706; }
+.date-future { background-color: #f3f4f6; color: #6b7280; }
+.date-completed { background-color: #dcfce3; color: #16a34a; }
+
+
+input[type="date"] {
+  position: relative;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  display: none;
 }
 
 /* --- MOBILE --- */
