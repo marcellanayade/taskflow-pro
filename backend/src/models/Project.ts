@@ -4,10 +4,11 @@ export interface IProject extends Document {
   name: string;
   description?: string;
   owner: mongoose.Types.ObjectId; //mongodb id
+  members: mongoose.Types.ObjectId[]; //users who have access
   createdAt: Date;
 }
 
-//rules for db
+// rules for db
 const projectSchema: Schema = new Schema({
   name: { 
     type: String, 
@@ -23,6 +24,11 @@ const projectSchema: Schema = new Schema({
     ref: 'User',                 //this id belongs to 'User'
     required: [true, 'The project must belong to a user!']
   },
+  members: [{
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    default: []
+  }],
   createdAt: { 
     type: Date, 
     default: Date.now 

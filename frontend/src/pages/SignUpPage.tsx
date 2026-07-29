@@ -2,14 +2,13 @@ import './SignUpPage.css';
 import { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2';
 
 export function SignUpPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  
-  const [error, setError] = useState('');
   
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -18,10 +17,15 @@ export function SignUpPage() {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(''); 
 
     if (password !== confirmPassword) {
-      setError('The passwords do not match. Please check them and try again.');
+      //show password mismatch error with sweetalert2
+      Swal.fire({
+        title: 'Check passwords',
+        text: 'The passwords do not match. Please check them and try again.',
+        icon: 'warning',
+        confirmButtonColor: '#7260e0'
+      });
       return; 
     }
 
@@ -33,13 +37,28 @@ export function SignUpPage() {
       });
 
       console.log('Account created successfully:', response.data);
-      alert('Account created successfully! Please log in.');
+      
+      //show success message with sweetalert2
+      await Swal.fire({
+        title: 'Account created!',
+        text: 'Your account was created successfully. Please log in.',
+        icon: 'success',
+        confirmButtonColor: '#7260e0'
+      });
       
       //redirect to login page
       navigate('/login');
 
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Error creating account. Please try again.');
+      //get error from backend and show with sweetalert2
+      const errorMessage = err.response?.data?.error || 'Error creating account. Please try again.';
+      
+      Swal.fire({
+        title: 'Sign up failed',
+        text: errorMessage,
+        icon: 'error',
+        confirmButtonColor: '#7260e0'
+      });
     }
   };
 
@@ -59,8 +78,6 @@ export function SignUpPage() {
         </div>
 
         <form onSubmit={handleSignUp}>
-          
-          {error && <div className="error-message">{error}</div>}
 
           <div className="input-group">
             <input 

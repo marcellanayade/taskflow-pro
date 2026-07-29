@@ -43,11 +43,10 @@ export class TaskController {
     try {
       const { id } = req.params; 
       
-      //get tasks from this project and user 
-      const tasks = await Task.find({ 
-        project: id, 
-        user: req.userId 
-      });
+      //get all tasks from this project so all team members can see them
+      //populate 'user' so name/email show on the task avatar
+      const tasks = await Task.find({ project: id })
+        .populate('user', 'name email');
       
       return res.status(200).json(tasks);
     } catch (error: any) {
@@ -76,7 +75,7 @@ export class TaskController {
     try {
       const { id } = req.params;
       
-      //pass userId to ensure user owns the task
+      //pass userId to ensure user owns the task or is project owner
       const result = await taskService.deleteTask(id as string, req.userId as string);
       
       //send success message

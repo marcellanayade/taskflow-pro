@@ -2,29 +2,42 @@ import './ForgotPasswordPage.css';
 import { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2';
 
 export function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
-  
-  const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setMessage('');
     setIsLoading(true);
 
     try {
       //send only email to backend
       await axios.post('http://localhost:5000/api/users/forgot-password', { email });
     
-      setMessage('If an account matches that email, a password reset link has been sent.');
+      //show success alert with sweetalert2
+      await Swal.fire({
+        title: 'Check your inbox',
+        text: 'If an account matches that email, a password reset link has been sent.',
+        icon: 'success',
+        confirmButtonColor: '#7260e0'
+      });
+
+      //redirect to login page
+      navigate('/login');
     } catch (err: any) {
-      setError(err.response?.data?.error || 'An error occurred. Please try again.');
+      const errorMessage = err.response?.data?.error || 'An error occurred. Please try again.';
+      
+      //show error alert with sweetalert2
+      Swal.fire({
+        title: 'Error',
+        text: errorMessage,
+        icon: 'error',
+        confirmButtonColor: '#7260e0'
+      });
     } finally {
       setIsLoading(false); 
     }
@@ -45,12 +58,8 @@ export function ForgotPasswordPage() {
         </div>
 
         <form onSubmit={handleForgotPassword}>
-          
-          {error && <div className="error-message">{error}</div>}
-          {message && <div className="success-message">{message}</div>}
 
           <div className="input-group">
-           
             <input 
               type="email" 
               placeholder="Type your email"

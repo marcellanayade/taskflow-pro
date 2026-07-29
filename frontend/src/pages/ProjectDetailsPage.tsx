@@ -4,6 +4,18 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 
+//get current user id from token
+const getUserIdFromToken = () => {
+    const token = localStorage.getItem('token');
+    if (!token) return null;
+    try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        return payload.id || payload.userId || payload._id || payload.sub;
+    } catch (e) {
+        return null;
+    }
+};
+
 export function ProjectDetailsPage() {
     //get id from url
     const { id } = useParams();
@@ -14,6 +26,9 @@ export function ProjectDetailsPage() {
 
     //save project name
     const [projectName, setProjectName] = useState<string>('');
+
+    //save project owner id
+    const [projectOwnerId, setProjectOwnerId] = useState<string>('');
 
     //is screen loading
     const [loading, setLoading] = useState(true);
@@ -67,6 +82,8 @@ export function ProjectDetailsPage() {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setProjectName(projectResponse.data.name);
+                //save owner id from db
+                setProjectOwnerId(projectResponse.data.owner?._id || projectResponse.data.owner);
 
                 const tasksResponse = await axios.get(`http://localhost:5000/api/projects/${id}/tasks`, {
                     headers: { Authorization: `Bearer ${token}` }
@@ -119,6 +136,46 @@ export function ProjectDetailsPage() {
 
         fetchData();
     }, [id, navigate]); //whenever id changes 
+
+    //invite member by email
+    const handleInviteMember = async () => {
+        const { value: email } = await Swal.fire({
+            title: 'Invite Team Member',
+            input: 'email',
+            inputLabel: 'Enter the collaborator\'s email address:',
+            inputPlaceholder: 'name@example.com',
+            showCancelButton: true,
+            confirmButtonColor: '#7260e0',
+            cancelButtonColor: '#9ca3af',
+            confirmButtonText: 'Invite'
+        });
+
+        if (email) {
+            try {
+                const token = localStorage.getItem('token');
+                await axios.post(`http://localhost:5000/api/projects/${id}/members`, 
+                    { email }, 
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
+
+                Swal.fire({
+                    title: 'Success!',
+                    text: `User ${email} has been invited to this project.`,
+                    icon: 'success',
+                    confirmButtonColor: '#7260e0'
+                });
+            } catch (error: any) {
+                console.error('Error inviting member:', error);
+                const errorMessage = error.response?.data?.error || 'Failed to invite user.';
+                Swal.fire({
+                    title: 'Error!',
+                    text: errorMessage,
+                    icon: 'error',
+                    confirmButtonColor: '#7260e0'
+                });
+            }
+        }
+    };
 
     //send new task or update to backend
     const handleSubmit = async (e: React.FormEvent) => {
@@ -192,7 +249,12 @@ export function ProjectDetailsPage() {
     };
 
     //when user starts to drag a card 
-    const handleDragStart = (e: React.DragEvent, taskId: string) => {
+    const handleDragStart = (e: React.DragEvent, taskId: string, isAuthor: boolean) => {
+        //prevent drag if user is not the task author
+        if (!isAuthor) {
+            e.preventDefault();
+            return;
+        }
         e.dataTransfer.setData('taskId', taskId);
     };
 
@@ -205,6 +267,7 @@ export function ProjectDetailsPage() {
     const handleDrop = async (e: React.DragEvent, newStatus: string) => {
         e.preventDefault();
         const taskId = e.dataTransfer.getData('taskId');
+        if (!taskId) return;
 
         //get current date if task is completed 
         const isCompleted = newStatus === 'completed';
@@ -231,8 +294,15 @@ export function ProjectDetailsPage() {
                 updateData,
                 { headers: { Authorization: `Bearer ${token}` } }
             );
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error updating task status:', error);
+            //show error and reload tasks if unauthorized
+            Swal.fire({
+                title: 'Unauthorized!',
+                text: 'You can only move tasks created by you.',
+                icon: 'error',
+                confirmButtonColor: '#7260e0'
+            });
         }
     };
 
@@ -288,11 +358,12 @@ export function ProjectDetailsPage() {
                     icon: 'success',
                     confirmButtonColor: '#7260e0'
                 });
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error deleting task:', error);
+                const errorMessage = error.response?.data?.error || 'Failed to delete the task.';
                 Swal.fire({
                     title: 'Error!',
-                    text: 'Failed to delete the task.',
+                    text: errorMessage,
                     icon: 'error',
                     confirmButtonColor: '#7260e0'
                 });
@@ -306,12 +377,32 @@ export function ProjectDetailsPage() {
                 <div className="dashboard-header">
                     <h2></h2>
 
-                    <button className="btn-back" onClick={() => navigate('/projects')} title="Back to Projects">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <line x1="19" y1="12" x2="5" y2="12"></line>
-                            <polyline points="12 19 5 12 12 5"></polyline>
-                        </svg>
-                    </button>
+                    <div style={{ display: 'flex', gap: '0.75rem' }}>
+                        {/* invite member button (only owner sees it) */}
+                        {(() => {
+                            const currentUserId = getUserIdFromToken();
+                            const isOwner = currentUserId && (projectOwnerId === currentUserId);
+                            return isOwner ? (
+                                <button className="btn-invite" onClick={handleInviteMember} title="Invite Collaborator">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="8.5" cy="7" r="4"></circle>
+                                        <line x1="20" y1="8" x2="20" y2="14"></line>
+                                        <line x1="23" y1="11" x2="17" y2="11"></line>
+                                    </svg>
+                                    Invite Member
+                                </button>
+                            ) : null;
+                        })()}
+
+                        {/* back button */}
+                        <button className="btn-back" onClick={() => navigate('/projects')} title="Back to Projects">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <line x1="19" y1="12" x2="5" y2="12"></line>
+                                <polyline points="12 19 5 12 12 5"></polyline>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
 
                 <form className="project-form" onSubmit={handleSubmit}>
@@ -470,65 +561,89 @@ export function ProjectDetailsPage() {
                                         )}
 
                                         <div className="kanban-task-list" id={`list-${columnStatus}`}>
-                                            {columnTasks.map((task) => (
-                                                <div
-                                                    key={task._id}
-                                                    className="kanban-card"
-                                                    draggable
-                                                    onDragStart={(e) => handleDragStart(e, task._id)}
-                                                >
-                                                    <div className="kanban-card-header">
+                                            {columnTasks.map((task) => {
+                                                //get author info for avatar
+                                                const authorName = task.user?.name || 'User';
+                                                const authorInitial = authorName.charAt(0);
 
-                                                        <button className="btn-icon edit" onClick={() => handleEditTask(task._id)} title="Edit Task">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                                                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                                                            </svg>
-                                                        </button>
+                                                //check if user is only the task author (not project owner anymore)
+                                                const currentUserId = getUserIdFromToken();
+                                                const taskAuthorId = task.user?._id || task.user;
+                                                const isTaskAuthor = Boolean(currentUserId && (taskAuthorId === currentUserId));
 
-                                                        <h4>{task.title}</h4>
+                                                return (
+                                                    <div
+                                                        key={task._id}
+                                                        className="kanban-card"
+                                                        draggable={isTaskAuthor}
+                                                        onDragStart={(e) => handleDragStart(e, task._id, isTaskAuthor)}
+                                                        style={{
+                                                            cursor: isTaskAuthor ? 'grab' : 'default',
+                                                            opacity: isTaskAuthor ? 1 : 0.85
+                                                        }}
+                                                    >
+                                                        <div className="kanban-card-header">
+                                                            {isTaskAuthor ? (
+                                                                <button className="btn-icon edit" onClick={() => handleEditTask(task._id)} title="Edit Task">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                                                    </svg>
+                                                                </button>
+                                                            ) : <div />}
 
-                                                        <button className="btn-icon delete" onClick={() => handleDeleteTask(task._id)} title="Delete Task">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                                <polyline points="3 6 5 6 21 6"></polyline>
-                                                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                                            </svg>
-                                                        </button>
+                                                            <h4>{task.title}</h4>
 
+                                                            {isTaskAuthor ? (
+                                                                <button className="btn-icon delete" onClick={() => handleDeleteTask(task._id)} title="Delete Task">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                                                    </svg>
+                                                                </button>
+                                                            ) : <div />}
+                                                        </div>
+
+                                                        {task.description && <p className="task-desc">{task.description}</p>}
+
+                                                        {/* task meta info: priority and date */}
+                                                        <div className="task-meta" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                                {/* task author avatar */}
+                                                                <div className="user-avatar" title={`Created by: ${authorName}`}>
+                                                                    {authorInitial}
+                                                                </div>
+
+                                                                {task.priority && <span className={`badge-priority priority-${task.priority}`}>{task.priority}</span>}
+                                                            </div>
+
+                                                            {/*if completed, show done task date with check */}
+                                                            {columnStatus === 'completed' && task.completedAt && (
+                                                                <span className="badge-date date-completed">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                                                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                                                    </svg>
+                                                                    Done in {formatDate(task.completedAt)}
+                                                                </span>
+                                                            )}
+
+                                                            {/* if not completed, show deadline */}
+                                                            {task.dueDate && columnStatus !== 'completed' && (
+                                                                <span className={`badge-date date-${getDateStatus(task.dueDate)}`}>
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                                                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                                                                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                                                                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                                                                    </svg>
+                                                                    {formatDate(task.dueDate)}
+                                                                </span>
+                                                            )}
+                                                        </div>
                                                     </div>
-
-                                                    {task.description && <p className="task-desc">{task.description}</p>}
-
-                                                    {/* task meta info: priority and date */}
-                                                    <div className="task-meta" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                        {task.priority && <span className={`badge-priority priority-${task.priority}`}>{task.priority}</span>}
-
-                                                        {/*if completed, show done task date with check */}
-                                                        {columnStatus === 'completed' && task.completedAt && (
-                                                            <span className="badge-date date-completed">
-                                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                                                                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                                                                </svg>
-                                                                Done in {formatDate(task.completedAt)}
-                                                            </span>
-                                                        )}
-
-                                                        {/* if not completed, show deadline */}
-                                                        {task.dueDate && columnStatus !== 'completed' && (
-                                                            <span className={`badge-date date-${getDateStatus(task.dueDate)}`}>
-                                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                                                                    <line x1="16" y1="2" x2="16" y2="6"></line>
-                                                                    <line x1="8" y1="2" x2="8" y2="6"></line>
-                                                                    <line x1="3" y1="10" x2="21" y2="10"></line>
-                                                                </svg>
-                                                                {formatDate(task.dueDate)}
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            ))}
+                                                );
+                                            })}
                                         </div>
 
                                         {/* right btn for mobile */}

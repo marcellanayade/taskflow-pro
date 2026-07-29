@@ -15,6 +15,8 @@ router.get('/', projectController.getAll);
 router.put('/:id', projectController.update);
 router.delete('/:id', projectController.delete);
 
+router.post('/:id/members', projectController.addMember);
+
 router.get('/:id/tasks', taskController.getByProject);
 router.post('/:id/tasks', taskController.create);
 

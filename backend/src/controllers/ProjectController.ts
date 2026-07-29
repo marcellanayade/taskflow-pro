@@ -23,7 +23,7 @@ export class ProjectController {
 
   async getAll(req: AuthRequest, res: Response) {
     try {
-      //fetch only projects belonging to this specific owner
+      //fetch projects where user is owner or member
       const projects = await projectService.getAllProjects(req.userId as string);
       return res.status(200).json(projects);
     } catch (error: any) {
@@ -31,10 +31,10 @@ export class ProjectController {
     }
   }
 
-  async getProjectById(req: Request, res: Response) {
+  async getProjectById(req: AuthRequest, res: Response) {
     try {
       const { id } = req.params;
-      const project = await projectService.getProjectById(id as string);
+      const project = await projectService.getProjectById(id as string, req.userId as string);
       return res.status(200).json(project);
     } catch (error: any) {
       return res.status(404).json({ error: error.message });
@@ -59,6 +59,28 @@ export class ProjectController {
       //pass userId to service for security check
       const result = await projectService.deleteProject(id as string, req.userId as string);
       return res.status(200).json(result);
+    } catch (error: any) {
+      return res.status(400).json({ error: error.message });
+    }
+  }
+
+  //add member by email
+  async addMember(req: AuthRequest, res: Response) {
+    try {
+      const { id } = req.params;
+      const { email } = req.body;
+
+      if (!email) {
+        return res.status(400).json({ error: 'Email is required.' });
+      }
+
+      const updatedProject = await projectService.addMemberByEmail(
+        id as string, 
+        req.userId as string, 
+        email
+      );
+      
+      return res.status(200).json(updatedProject);
     } catch (error: any) {
       return res.status(400).json({ error: error.message });
     }

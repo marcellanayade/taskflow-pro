@@ -4,6 +4,18 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 
+//get current user id from token
+const getUserIdFromToken = () => {
+  const token = localStorage.getItem('token');
+  if (!token) return null;
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.id || payload.userId || payload._id || payload.sub;
+  } catch (e) {
+    return null;
+  }
+};
+
 export function ProjectsPage() {
   const [projects, setProjects] = useState<any[]>([]);
   const [name, setName] = useState('');
@@ -215,32 +227,44 @@ export function ProjectsPage() {
           <p className="empty-message">You don't have any projects yet.</p>
         ) : (
           <ul className="project-list">
-            {projects.map((project) => (
-              <li 
-                key={project._id} 
-                className="project-card" 
-                onClick={() => navigate(`/projects/${project._id}`)} 
-              >
-                <div className="project-card-header">
-                  <h3>{project.name}</h3>
-                  <div className="project-card-actions">
-                    <button className="btn-icon edit" onClick={(e) => handleEditProject(e, project)} title="Edit Project">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                        </svg>
-                    </button>
-                    <button className="btn-icon delete" onClick={(e) => handleDeleteProject(e, project._id)} title="Delete Project">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="3 6 5 6 21 6"></polyline>
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                        </svg>
-                    </button>
+            {projects.map((project) => {
+              //check if current user is owner
+              const currentUserId = getUserIdFromToken();
+              const ownerId = project.owner?._id || project.owner;
+              const isOwner = currentUserId && (ownerId === currentUserId);
+
+              return (
+                <li 
+                  key={project._id} 
+                  className="project-card" 
+                  onClick={() => navigate(`/projects/${project._id}`)} 
+                >
+                  <div className="project-card-header">
+                    <h3>{project.name}</h3>
+                    <div className="project-card-actions">
+                      {/*only owner can edit or delete project*/}
+                      {isOwner && (
+                        <>
+                          <button className="btn-icon edit" onClick={(e) => handleEditProject(e, project)} title="Edit Project">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                              </svg>
+                          </button>
+                          <button className="btn-icon delete" onClick={(e) => handleDeleteProject(e, project._id)} title="Delete Project">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <polyline points="3 6 5 6 21 6"></polyline>
+                                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                              </svg>
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </div>
-                </div>
-                <p>{project.description || 'No description provided.'}</p>
-              </li>
-            ))}
+                  <p>{project.description || 'No description provided.'}</p>
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>
